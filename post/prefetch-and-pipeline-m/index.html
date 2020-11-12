@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>ARM Cortex-M 流水线与指令预取pipeline &amp; prefetch // 八仔驿站</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.76.3" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Chay Guo" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="https://willisyi.github.io/website/css/main.min.88e7083eff65effb7485b6e6f38d10afbec25093a6fac42d734ce9024d3defbd.css" />
+
+    
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="ARM Cortex-M 流水线与指令预取pipeline &amp; prefetch"/>
+<meta name="twitter:description" content="ARM Cortex-M 流水线与指令预取pipeline &amp; prefetch [TOC]
+最近的项目碰到了ECC的问题， 但问题的根源其实跟Arm-v7m架构的指令预取（instruction prefetch）有关。
+​	项目调试的NXP i.MX8系列上的Cortex-M4F 核的TCM（Tightly-Coupled Memory， 具有与Core相同频率的RAM）有ECC功能，程序的代码入口放在外部的QSPI flash上, 但是有一部分时间敏感（需要快速执行）的代码被放到了内部TCM上的QuickAccess段。我们发现代码执行时偶尔会有”触碰“ QuickAccess段之外的TCM的情况（触发了ECC error, 我们只对用到的TCM进行了ECC clean, CPU读没有用到的TCM时会触发ECC error)。最后发现是因为如果CPU执行到QuickAccess段的末尾时，由于M4有PFU(prefetch unit, 下面会介绍)，在当前指令执行完成前会从内存中获取指令以填充流水线， 而指令的预取基于分支预测。
+ Branch prediction
+Is where a processor chooses a future execution path to prefetch along (see Prefetching). For example, after a branch instruction, the processor can choose to prefetch either the instruction following the branch or the instruction at the branch target.
+ ​	也就是说处理器可以选择预取当前分支接下来的指令或者跳转后的目标分支的指令， 这也就导致了我们的软件偶发ECC error。 假如预取当前分支接下来的指令，则会访问超出QuickAccess段的TCM，这时触发ECC， 系统宕机。 通常情况下，软件是不需要关心流水线pipeline与指令预取的，他们对于软件执行来说是透明的。"/>
+
+    <meta property="og:title" content="ARM Cortex-M 流水线与指令预取pipeline &amp; prefetch" />
+<meta property="og:description" content="ARM Cortex-M 流水线与指令预取pipeline &amp; prefetch [TOC]
+最近的项目碰到了ECC的问题， 但问题的根源其实跟Arm-v7m架构的指令预取（instruction prefetch）有关。
+​	项目调试的NXP i.MX8系列上的Cortex-M4F 核的TCM（Tightly-Coupled Memory， 具有与Core相同频率的RAM）有ECC功能，程序的代码入口放在外部的QSPI flash上, 但是有一部分时间敏感（需要快速执行）的代码被放到了内部TCM上的QuickAccess段。我们发现代码执行时偶尔会有”触碰“ QuickAccess段之外的TCM的情况（触发了ECC error, 我们只对用到的TCM进行了ECC clean, CPU读没有用到的TCM时会触发ECC error)。最后发现是因为如果CPU执行到QuickAccess段的末尾时，由于M4有PFU(prefetch unit, 下面会介绍)，在当前指令执行完成前会从内存中获取指令以填充流水线， 而指令的预取基于分支预测。
+ Branch prediction
+Is where a processor chooses a future execution path to prefetch along (see Prefetching). For example, after a branch instruction, the processor can choose to prefetch either the instruction following the branch or the instruction at the branch target.
+ ​	也就是说处理器可以选择预取当前分支接下来的指令或者跳转后的目标分支的指令， 这也就导致了我们的软件偶发ECC error。 假如预取当前分支接下来的指令，则会访问超出QuickAccess段的TCM，这时触发ECC， 系统宕机。 通常情况下，软件是不需要关心流水线pipeline与指令预取的，他们对于软件执行来说是透明的。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://willisyi.github.io/website/post/prefetch-and-pipeline-m/" />
+<meta property="article:published_time" content="2020-11-12T17:31:33+08:00" />
+<meta property="article:modified_time" content="2020-11-12T17:31:33+08:00" />
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="https://willisyi.github.io/website/"><img class="app-header-avatar" src="/website/avatar.jpg" alt="Chay Guo" /></a>
+      <h1>八仔驿站</h1>
+      <nav class="app-header-menu">
+          <a class="app-header-menu-item" href="/website/">Home</a>
+             - 
+          
+          <a class="app-header-menu-item" href="/website/tags/">Tags</a>
+             - 
+          
+          <a class="app-header-menu-item" href="/website/about">关于</a>
+      </nav>
+      <p>学习笔记与技术分享Blog.</p>
+      <div class="app-header-social">
+        
+          <a target="_blank" href="https://github.com/willisyi" rel="noreferrer noopener"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github">
+  <title>github</title>
+  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+</svg></a>
+        
+      </div>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">ARM Cortex-M 流水线与指令预取pipeline &amp; prefetch</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Nov 12, 2020
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          2 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <h2 id="arm-cortex-m-流水线与指令预取pipeline--prefetch">ARM Cortex-M 流水线与指令预取pipeline &amp; prefetch</h2>
+<p>[TOC]</p>
+<p>最近的项目碰到了ECC的问题， 但问题的根源其实跟Arm-v7m架构的指令预取（instruction prefetch）有关。</p>
+<p>​		项目调试的NXP i.MX8系列上的Cortex-M4F 核的TCM（Tightly-Coupled Memory， 具有与Core相同频率的RAM）有ECC功能，程序的代码入口放在外部的QSPI flash上, 但是有一部分时间敏感（需要快速执行）的代码被放到了内部TCM上的<strong>QuickAccess</strong>段。我们发现代码执行时偶尔会有”触碰“ QuickAccess段之外的TCM的情况（触发了ECC error, 我们只对用到的TCM进行了ECC clean, CPU读没有用到的TCM时会触发ECC error)。最后发现是因为如果CPU执行到QuickAccess段的末尾时，由于M4有PFU(prefetch unit, 下面会介绍)，在当前指令执行完成前会从内存中获取指令以填充流水线， 而指令的预取基于分支预测。</p>
+<blockquote>
+<p><strong>Branch prediction</strong></p>
+<p>Is where a processor chooses a future execution path to prefetch along (see Prefetching). For example, after a branch instruction, the processor can choose to <strong>prefetch either the instruction following the branch or the instruction at the branch target</strong>.</p>
+</blockquote>
+<p>​		也就是说处理器可以选择预取当前分支接下来的指令或者跳转后的目标分支的指令， 这也就导致了我们的软件偶发ECC error。 假如预取当前分支接下来的指令，则会访问超出QuickAccess段的TCM，这时触发ECC， 系统宕机。 通常情况下，软件是不需要关心流水线pipeline与指令预取的，他们对于软件执行来说是透明的。</p>
+<p>​		下面具体介绍一些相关知识， 毕竟我是做软件的，对CortexM核的硬件细节认知有限，难免有不准确的地方。如有纰漏欢迎指正。</p>
+<h4 id="背景知识">背景知识：</h4>
+<h5 id="什么是ecc">什么是ECC：</h5>
+<p>​		在ECC技术出现之前，内存中应用最多的另外一种错误检查技术，是奇偶校验位（Parity）技术。而带有“奇偶校验”的内存在每一字节（8位）外又额外增加了一位用来进行错误检测。</p>
+<p>​		但奇偶校验位技术有个缺点，当内存查到某个数据位有错误时，由于不一定能确定错误在哪一个位，也就不一定能修正错误。所以带有奇偶校验的内存的主要功能仅仅是“发现错误”，并能纠正部分简单的错误。此外，奇偶校验技术是通过在原来数据位的基础上增加一个数据位来检查当前8位数据的正确性，但随着数据位的增加，用来检验的数据位也成倍增加，就是说当数据位为16位时它需要增加2位用于检查，当数据位为32位时则需增加4位，依此类推。特别是当数据量非常大时，数据出错的几率也就越大，对于只能纠正简单错误的奇偶检验的方法就显得力不从心了。正是基于这样一种情况，错误检查和纠正（Error Checking and Correcting）应运而生了。</p>
+<p>ECC的英文全称是“ Error Checking and Correcting”（错误检查和纠正），从这个名称就可以看出它的主要功能就是“发现并纠正错误”。与奇偶校验技术一样，ECC纠错技术也需要额外的空间来储存校正码，但其占用的位数跟数据的长度并非成线性关系。具体来说，它是以8位数据、5位ECC码为基准，随后每增加一个8位数据只需另增加一位ECC码即可。</p>
+<h5 id="指令流水线">指令流水线</h5>
+<p>​		Cortex-M0是冯诺依曼体系，3级流水线RISC架构，没有指令预取的。Cortex M3, M4, 采用三级流水线支持分支预测，哈佛结构，除了原system总线负责SRAM存取外，还新增两条ICode、DCode总线分别完成Flash上指令和数据存取。M7拥有双发射六级流水线并支持分支预测， 同M3,M4同属 ARM v7m RISC指令架构。</p>
+<p>指令流水线是一种被用于处理器设计的技术，提升指令的吞吐量。经典的流水线由三个阶段组成 &mdash; 取指、译码和执行，如图所示</p>
+<p><img src="/website/images/pipeline-3.png" alt="pipeline"></p>
+<p>​		一般来说，ARM架构试图对编程者隐藏流水线影响。这意味着，编程者只能通过阅读处理器手册来决定流水线结构。然而，一些流水线工件仍然存在。例如，程序计数器寄存器(R15)在ARM状态时，指向超前于当前正执行指令两个指令的指令，这是最初ARM1处理器三阶段流水线的遗留物。</p>
+<p>​		长流水线一个更近一步的缺点是有时来自内存的指令的串行执行会被打断。这可能会发生在一个分支指令执行的结果，或被一个异常事件(例如一个中断)。当此发生时，处理器无法决定下一条应该被获取指令的正确位置，直到分支被解决。在典型的代码中，很多分支指令是有条件的，作为循环或者if声明的结果。因此，分支是否会被执行不能再指令获取时决定。如果我们获取的指令紧跟着一个分支，并且分支被执行，流水线必须清空，来自分支目的地的指令新指令集必须从内存获取。ARM v7m 有分支预测逻辑，目的是减少分支惩罚的影响。<strong>如果预测正确，分支不会清空流水线</strong>。<strong>如果预测错误，流水线必须清空，并且获取来自正确位置的指令来充填</strong>。</p>
+<h5 id="分支预测branch-prediction">分支预测（Branch prediction）</h5>
+<p>​		一个条件跳转指令第一次被获取时，没有关于下一条指令地址的可依赖信息。旧的ARM处理器使用静态分支预测。这是最简单的分支预测方法，因为它不需要关于分支的先前信息。我们推测向后的分支会被采用，向前的分支不会。向后的分支具有一个目标地址，低于它自己的地址。我们因此可以看一个单一的操作位来决定分支方向。这个技术可以给与合理的预测精度，归因于代码中循环的普遍，循环代码总是包含后向分支，并且后向总比前向多很多。由于Cortex-M7系列处理器的流水线长度，我们通过使用更为复杂的给予更好预测精度的分支预测方法，可以获得更好的性能。</p>
+<p>​		动态分支预测可以进一步减少平均分支惩罚，通过使用在前面执行时条件分支是否被采用的历史信息。Cortex-M7处理器中的分支目标地址缓存(Branch Target Address Cache ,BTAC)</p>
+<p>ARM®v7-M Architecture Reference Manual里写道：</p>
+<blockquote>
+<p>An ARMv7-M implementation must choose how far ahead of the current point of execution it prefetches instructions. This can be either a fixed or a dynamically varying number of instructions. As well as choosing how many instructions to prefetch, an implementation can choose which possible future execution path to prefetch along.
+For example, after a branch instruction, it can prefetch either the instruction appearing in program order after the branch or the instruction at the branch target. This is known as branch prediction.</p>
+</blockquote>
+<p>具体预取多少在Cortex-M4 Technical Reference Manual和Cortex-M7 Technical Reference Manual里分别有介绍。</p>
+<ul>
+<li>对于Cortex-M4</li>
+</ul>
+<p><strong>Prefetch Unit (PFU)</strong> The PFU fetches instructions from the memory system that can supply one word each cycle. The PFU buffers up to three word fetches in its FIFO, which means that it can buffer up to three
+32-bit Thumb instructions or six 16-bit Thumb instructions.</p>
+<ul>
+<li>
+<p>对于Cortex-M7</p>
+<p>The Prefetch Unit (PFU) provides:
+• 64-bit instruction fetch bandwidth.
+• 4x64-bit pre-fetch queue to decouple instruction pre-fetch from DPU pipeline operation.
+• A Branch Target Address Cache (BTAC) for single-cycle turn-around of branch predictor
+state and target address.
+• A static branch predictor when no BTAC is specified.
+• Forwarding of flags for early resolution of direct branches in the decoder and first
+execution stages of the processor pipeline.</p>
+<p>可见对于M4来说预取长度是6个16-Bit Thumb 指令，或3个32 Bit指令。对于M7是8个Byte。</p>
+</li>
+</ul>
+<h4 id="总结与提醒">总结与提醒</h4>
+<p>​			根据上述分析可知，TCM的越界访问来自于指令预取。那么当程序text段全部放在TCM里时，我们也没有把TCM全部占满，但并没有碰到CPU越界访问的情况（没有预取到text段以外的内存）， 这是为什么呢？ 其实编译器替我们做好了，编译器会根据MCU的架构在链接的程序末尾加上大于等于预取长度的无效或无条件跳转指令比如0或0xE7FE（B.N 指令）。实际测试发现， IAR编译器总是会在编译的binary结尾加上B.N 指令（M4加6个， M7加4个）， armgcc 会在binary结尾加0， KEIL会将readonly data放在结尾， 当然最终的binary也会跟linker有关，但看起来编译器会考虑到指令预取到边界的问题，目前只是猜测，可能需要阅读ARM ABI(Application Binary Interface for ARM) 和编译器设计规范才能得知。总之不会出现我们遇到的情况。</p>
+<p><em>原创文章：转载请注明出处https://github.com/willisyi</em></p>
+
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>

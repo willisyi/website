@@ -6,7 +6,21 @@
     <description>Recent content on 八仔驿站</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 21 Oct 2020 11:20:35 +0800</lastBuildDate><atom:link href="https://willisyi.github.io/website/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 12 Nov 2020 17:31:33 +0800</lastBuildDate><atom:link href="https://willisyi.github.io/website/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ARM Cortex-M 流水线与指令预取pipeline &amp; prefetch</title>
+      <link>https://willisyi.github.io/website/post/prefetch-and-pipeline-m/</link>
+      <pubDate>Thu, 12 Nov 2020 17:31:33 +0800</pubDate>
+      
+      <guid>https://willisyi.github.io/website/post/prefetch-and-pipeline-m/</guid>
+      <description>ARM Cortex-M 流水线与指令预取pipeline &amp;amp; prefetch [TOC]
+最近的项目碰到了ECC的问题， 但问题的根源其实跟Arm-v7m架构的指令预取（instruction prefetch）有关。
+​	项目调试的NXP i.MX8系列上的Cortex-M4F 核的TCM（Tightly-Coupled Memory， 具有与Core相同频率的RAM）有ECC功能，程序的代码入口放在外部的QSPI flash上, 但是有一部分时间敏感（需要快速执行）的代码被放到了内部TCM上的QuickAccess段。我们发现代码执行时偶尔会有”触碰“ QuickAccess段之外的TCM的情况（触发了ECC error, 我们只对用到的TCM进行了ECC clean, CPU读没有用到的TCM时会触发ECC error)。最后发现是因为如果CPU执行到QuickAccess段的末尾时，由于M4有PFU(prefetch unit, 下面会介绍)，在当前指令执行完成前会从内存中获取指令以填充流水线， 而指令的预取基于分支预测。
+ Branch prediction
+Is where a processor chooses a future execution path to prefetch along (see Prefetching). For example, after a branch instruction, the processor can choose to prefetch either the instruction following the branch or the instruction at the branch target.
+ ​	也就是说处理器可以选择预取当前分支接下来的指令或者跳转后的目标分支的指令， 这也就导致了我们的软件偶发ECC error。 假如预取当前分支接下来的指令，则会访问超出QuickAccess段的TCM，这时触发ECC， 系统宕机。 通常情况下，软件是不需要关心流水线pipeline与指令预取的，他们对于软件执行来说是透明的。</description>
+    </item>
+    
     <item>
       <title>Windows上的包管理工具</title>
       <link>https://willisyi.github.io/website/post/choco/</link>
