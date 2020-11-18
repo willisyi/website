@@ -129,7 +129,7 @@ execution stages of the processor pipeline.</p>
 </li>
 </ul>
 <h4 id="总结与提醒">总结与提醒</h4>
-<p>​			根据上述分析可知，TCM的越界访问来自于指令预取。那么当程序text段全部放在TCM里时，我们也没有把TCM全部占满，但并没有碰到CPU越界访问的情况（没有预取到text段以外的内存）， 这是为什么呢？ 其实编译器替我们做好了，编译器会根据MCU的架构在链接的程序末尾加上大于等于预取长度的无效或无条件跳转指令比如0或0xE7FE（B.N 指令）。实际测试发现， IAR编译器总是会在编译的binary结尾加上B.N 指令（M4加6个， M7加4个）， armgcc 会在binary结尾加0， KEIL会将readonly data放在结尾， 当然最终的binary也会跟linker有关，但看起来编译器会考虑到指令预取到边界的问题，目前只是猜测，可能需要阅读ARM ABI(Application Binary Interface for ARM) 和编译器设计规范才能得知。总之不会出现我们遇到的情况。</p>
+<p>​			根据上述分析可知，TCM的越界访问来自于指令预取。那么当程序text段全部放在TCM里时，我们也没有把TCM全部占满，但并没有碰到CPU越界访问的情况（没有预取到text段以外的内存）， 这是为什么呢？其实具体的应用中很少会有code将TCM占满的情况， 一般会有Read only data或者一些空的（reserved）中断服函数之类的。 实际测试发现， armgcc 会在binary结尾加0， KEIL会将readonly data放在结尾， 当然最终的binary也会跟linker有关。总之在实际的应用中要考虑到prefetch的情况。</p>
 <p><em>原创文章：转载请注明出处https://github.com/willisyi</em></p>
 
     </div>
