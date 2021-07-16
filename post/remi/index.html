@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>Remi // 八仔驿站</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.76.3" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Chay Guo" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="https://willisyi.github.io/website/css/main.min.88e7083eff65effb7485b6e6f38d10afbec25093a6fac42d734ce9024d3defbd.css" />
+
+    
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Remi"/>
+<meta name="twitter:description" content="用纯Python就能写一个漂亮的网页-Remi 我们在写一个网站或者一个网页界面的时候，需要学习很多东西，对小白来说很困难！比如我要做一个简单的网页交互：
+要懂后端，比如Python里面的Django或者Flask，或者是Java里面的SpringBoot
+要懂前端，现在都叫大前端了(因为很复杂)，比如前端的框架Vue/React, 然后页面的美化框架Bootstrap ，还有html ,csss 和Javascript 三驾马车.
+如果只会python, 可不可以做一个简单的网页呢， 答案是可以的， 并且有开源的库可用， 今天介绍的就是开源Python REmote Interface Library Remi. 它是个仅有100Kbytes大小的平台无关的基于web的GUI库，并且提供GUI设计工具。
+首先附上项目地址： https://github.com/dddomodossola/remi， GUI 设计工具 https://github.com/dddomodossola/remi/tree/master/editor
+REMI 特点如下：
+  跟其他GUI库区别？ Kivy，PyQT和PyGObject都需要主机操作系统的本机代码，这意味着安装或编译大型依赖项。Remi只需要一个Web浏览器即可显示您的GUI。
+  我需要懂HTML吗？ 不，只需要使用Python进行编码。
+  它是开源的吗？ 当然！Remi是根据Apache许可发布的。开源，免费！
+  我需要某种网络服务器吗？ 不，自带网络服务器。
+  安装
+稳定版
+pip install remi
+最新feature可通过源码安装, clone 源码然后
+python setup.py install 或者 pip install git&#43;https://github.com/dddomodossola/remi.git
+运行
+启动测试脚本（https://github.com/dddomodossola/remi/blob/master/examples/widgets_overview_app.py）即可打开一个demo。
+python widgets_overview_app.py
+初窥代码
+一个简单的helloworld只需如下代码
+`
+import remi.gui as gui from remi import start, App class MyApp(App): def __init__(self, *args): super(MyApp, self)."/>
+
+    <meta property="og:title" content="Remi" />
+<meta property="og:description" content="用纯Python就能写一个漂亮的网页-Remi 我们在写一个网站或者一个网页界面的时候，需要学习很多东西，对小白来说很困难！比如我要做一个简单的网页交互：
+要懂后端，比如Python里面的Django或者Flask，或者是Java里面的SpringBoot
+要懂前端，现在都叫大前端了(因为很复杂)，比如前端的框架Vue/React, 然后页面的美化框架Bootstrap ，还有html ,csss 和Javascript 三驾马车.
+如果只会python, 可不可以做一个简单的网页呢， 答案是可以的， 并且有开源的库可用， 今天介绍的就是开源Python REmote Interface Library Remi. 它是个仅有100Kbytes大小的平台无关的基于web的GUI库，并且提供GUI设计工具。
+首先附上项目地址： https://github.com/dddomodossola/remi， GUI 设计工具 https://github.com/dddomodossola/remi/tree/master/editor
+REMI 特点如下：
+  跟其他GUI库区别？ Kivy，PyQT和PyGObject都需要主机操作系统的本机代码，这意味着安装或编译大型依赖项。Remi只需要一个Web浏览器即可显示您的GUI。
+  我需要懂HTML吗？ 不，只需要使用Python进行编码。
+  它是开源的吗？ 当然！Remi是根据Apache许可发布的。开源，免费！
+  我需要某种网络服务器吗？ 不，自带网络服务器。
+  安装
+稳定版
+pip install remi
+最新feature可通过源码安装, clone 源码然后
+python setup.py install 或者 pip install git&#43;https://github.com/dddomodossola/remi.git
+运行
+启动测试脚本（https://github.com/dddomodossola/remi/blob/master/examples/widgets_overview_app.py）即可打开一个demo。
+python widgets_overview_app.py
+初窥代码
+一个简单的helloworld只需如下代码
+`
+import remi.gui as gui from remi import start, App class MyApp(App): def __init__(self, *args): super(MyApp, self)." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://willisyi.github.io/website/post/remi/" />
+<meta property="article:published_time" content="2021-07-16T10:21:32+08:00" />
+<meta property="article:modified_time" content="2021-07-16T10:21:32+08:00" />
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="https://willisyi.github.io/website/"><img class="app-header-avatar" src="/website/avatar.jpg" alt="Chay Guo" /></a>
+      <h1>八仔驿站</h1>
+      <nav class="app-header-menu">
+          <a class="app-header-menu-item" href="/website/">Home</a>
+             - 
+          
+          <a class="app-header-menu-item" href="/website/tags/">Tags</a>
+             - 
+          
+          <a class="app-header-menu-item" href="/website/about">关于</a>
+      </nav>
+      <p>学习笔记与技术分享Blog.</p>
+      <div class="app-header-social">
+        
+          <a target="_blank" href="https://github.com/willisyi" rel="noreferrer noopener"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github">
+  <title>github</title>
+  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+</svg></a>
+        
+      </div>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">Remi</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Jul 16, 2021
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <h1 id="用纯python就能写一个漂亮的网页-remi">用纯Python就能写一个漂亮的网页-Remi</h1>
+<p>我们在写一个网站或者一个网页界面的时候，需要学习很多东西，对小白来说很困难！比如我要做一个简单的网页交互：</p>
+<p>要懂后端，比如Python里面的Django或者Flask，或者是Java里面的SpringBoot</p>
+<p>要懂前端，现在都叫大前端了(因为很复杂)，比如前端的框架Vue/React, 然后页面的美化框架Bootstrap ，还有html ,csss 和Javascript 三驾马车.</p>
+<p>如果只会python, 可不可以做一个简单的网页呢， 答案是可以的， 并且有开源的库可用， 今天介绍的就是开源Python REmote Interface Library Remi.  它是个仅有100Kbytes大小的平台无关的基于web的GUI库，并且提供GUI设计工具。</p>
+<p>首先附上项目地址： <a href="https://github.com/dddomodossola/remi">https://github.com/dddomodossola/remi</a>， GUI 设计工具 <a href="https://github.com/dddomodossola/remi/tree/master/editor">https://github.com/dddomodossola/remi/tree/master/editor</a></p>
+<p><strong>REMI 特点如下：</strong></p>
+<ul>
+<li>
+<p>跟其他GUI库区别？ Kivy，PyQT和PyGObject都需要主机操作系统的本机代码，这意味着安装或编译大型依赖项。Remi只需要一个Web浏览器即可显示您的GUI。</p>
+</li>
+<li>
+<p>我需要懂HTML吗？ 不，只需要使用Python进行编码。</p>
+</li>
+<li>
+<p>它是开源的吗？ 当然！Remi是根据Apache许可发布的。开源，免费！</p>
+</li>
+<li>
+<p>我需要某种网络服务器吗？ 不，自带网络服务器。</p>
+</li>
+</ul>
+<p><strong>安装</strong></p>
+<p>稳定版</p>
+<p><code>pip install remi</code></p>
+<p>最新feature可通过源码安装, clone 源码然后</p>
+<p><code>python setup.py install</code>  或者 <code>pip install git+https://github.com/dddomodossola/remi.git</code></p>
+<p><strong>运行</strong></p>
+<p>启动测试脚本（https://github.com/dddomodossola/remi/blob/master/examples/widgets_overview_app.py）即可打开一个demo。</p>
+<p><code>python widgets_overview_app.py</code></p>
+<p><img src="/website/images/remi-widgets.png" alt="widgets"></p>
+<p><strong>初窥代码</strong></p>
+<p>一个简单的helloworld只需如下代码</p>
+<p>`</p>
+<pre><code>import remi.gui as gui
+from remi import start, App
+
+class MyApp(App):
+    def __init__(self, *args):
+        super(MyApp, self).__init__(*args)
+
+    def main(self):
+        container = gui.VBox(width=120, height=100)
+        self.lbl = gui.Label('Hello world!')
+        self.bt = gui.Button('Press me!')
+
+        # setting the listener for the onclick event of the button
+        self.bt.onclick.do(self.on_button_pressed)
+
+        # appending a widget to another, the first argument is a string key
+        container.append(self.lbl)
+        container.append(self.bt)
+
+        # returning the root widget
+        return container
+
+    # listener function
+    def on_button_pressed(self, widget):
+        self.lbl.set_text('Button pressed!')
+        self.bt.set_text('Hi!')
+
+# starts the web server
+start(MyApp)
+</code></pre><p>`</p>
+
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>
